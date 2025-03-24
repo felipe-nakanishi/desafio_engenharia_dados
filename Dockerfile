@@ -1,5 +1,5 @@
 # Imagem base com Spark e Hadoop
-FROM bitnami/spark:3.5.1
+FROM bitnami/spark:latest
 
 # Instala dependências do Python
 RUN pip install pandas psycopg2-binary
