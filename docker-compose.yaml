@@ -12,5 +12,27 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  spark:
+    image: bitnami/spark:latest
+    container_name: spark_container
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "8080:8080"  # Spark UI
+    depends_on:
+      - postgres
+
+  etl:
+    build: .
+    container_name: etl_container
+    depends_on:
+      - postgres
+      - spark
+    environment:
+      DB_CONNECTION: "jdbc:postgresql://postgres:5432/si_cooperative_cartoes"
+    volumes:
+      - ./data:/app/data
+      - .:/app
+
 volumes:
   postgres_data:
