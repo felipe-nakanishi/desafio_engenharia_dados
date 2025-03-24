@@ -26,7 +26,7 @@ schema_associado = StructType([
 ])
 df_associado = spark.read.option("header", True).schema(schema_associado).csv('data/associado.csv')
 
-print(df_associado.show(2))
+print(df_associado.show(2),flush=True)
 # Leitura do arquivo bruto de conta:
 schema_conta = StructType([
     StructField('id', IntegerType(), nullable=False),
@@ -36,7 +36,7 @@ schema_conta = StructType([
 ])
 df_conta = spark.read.option("header", "true").schema(schema_conta).option("rowTag", "data").format("com.databricks.spark.xml").load("data/conta.xml")
 df_conta = df_conta.withColumn("data_criacao", to_date(df_conta.data_criacao, "yyyy-MM-dd HH:MM:SS"))
-print(df_conta.show(2))
+print(df_conta.show(2),flush=True)
 # Leitura do arquivo bruto de cartao:
 schema_cartao = StructType([
     StructField('id', IntegerType(), nullable=False),
@@ -46,7 +46,7 @@ schema_cartao = StructType([
     StructField('id_associado', IntegerType(), nullable=True)
 ])
 df_cartao = spark.read.option("header", "true").schema(schema_cartao).json("data/cartao.json")
-print(df_cartao.show(2))
+print(df_cartao.show(2),flush=True)
 # Leitura do arquivo de movimento:
 schema_movimento = StructType([
     StructField('id', IntegerType(), nullable=False),
@@ -58,7 +58,7 @@ schema_movimento = StructType([
 df_movimento = spark.read.option("header", "true").schema(schema_movimento).parquet("data/movimento.parquet")
 df_movimento = df_movimento.withColumn("data_criacao", to_date(df_movimento.data_movimento, "dd/MM/yyyy HH:MM:SS"))
 
-print(df_movimento.show(2))
+print(df_movimento.show(2),flush=True)
 
 # Carrega os dados brutos nas tabelas do schema bronze no PostgreSQL
 #df_associado.write.jdbc(url=jdbc_url, table="bronze.associado", mode="append", properties=connection_properties)

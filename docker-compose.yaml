@@ -22,6 +22,17 @@ services:
     depends_on:
       - postgres
 
+  spark-worker:
+    image: bitnami/spark:latest
+    volumes:
+      - ./data:/app/data
+    container_name: spark_worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark:7077
+    depends_on:
+      - spark
+
   etl:
     build: .
     container_name: etl_container
