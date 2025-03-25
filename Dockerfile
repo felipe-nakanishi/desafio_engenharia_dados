@@ -1,6 +1,9 @@
 # Imagem base com Spark e Hadoop
 FROM bitnami/spark:latest
 
+COPY jars/postgresql-42.7.3.jar /app/jars/
+
+
 # Instala dependências do Python
 RUN pip install pandas psycopg2-binary
 

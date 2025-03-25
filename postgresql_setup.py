@@ -5,7 +5,7 @@ conn = psycopg2.connect(
     dbname="si_cooperative_cartoes",
     user="admin",
     password="admin",
-    host="localhost"
+    host="postgres"
 )
 cur = conn.cursor()
 
@@ -15,7 +15,7 @@ CREATE SCHEMA IF NOT EXISTS silver;
 CREATE SCHEMA IF NOT EXISTS gold;""")
 
 
-# Criação das tabelas na camada bronze:
+# Criação das tabelas na camada bronze e cada uma de suas staging:
 
 cur.execute("""CREATE TABLE IF NOT EXISTS bronze.associado (
     id INTEGER PRIMARY KEY,
@@ -24,12 +24,25 @@ cur.execute("""CREATE TABLE IF NOT EXISTS bronze.associado (
     idade INTEGER,
     email VARCHAR(255)
 );
+    CREATE TABLE IF NOT EXISTS bronze.associado_staging (
+    id INTEGER PRIMARY KEY,
+    nome VARCHAR(100),
+    sobrenome VARCHAR(100),
+    idade INTEGER,
+    email VARCHAR(255)
+);        
     CREATE TABLE IF NOT EXISTS bronze.conta (
     id INTEGER PRIMARY KEY,
     tipo VARCHAR(100),
     data_criacao TIMESTAMP,
     id_associado INTEGER
-);    
+);
+    CREATE TABLE IF NOT EXISTS bronze.conta_staging (
+    id INTEGER PRIMARY KEY,
+    tipo VARCHAR(100),
+    data_criacao TIMESTAMP,
+    id_associado INTEGER
+);                
     CREATE TABLE IF NOT EXISTS bronze.cartao (
     id INTEGER PRIMARY KEY,
     num_cartao INTEGER,
@@ -38,7 +51,22 @@ cur.execute("""CREATE TABLE IF NOT EXISTS bronze.associado (
     id_conta INTEGER,
     id_associado INTEGER
 );
+    CREATE TABLE IF NOT EXISTS bronze.cartao_staging (
+    id INTEGER PRIMARY KEY,
+    num_cartao INTEGER,
+    nom_impresso varchar(100),
+    data_criacao TIMESTAMP,
+    id_conta INTEGER,
+    id_associado INTEGER
+);        
     CREATE TABLE IF NOT EXISTS bronze.movimento (
+    id INTEGER PRIMARY KEY,
+    vlr_transacao DECIMAL(10,2),
+    des_transacao varchar(100),
+    data_movimento TIMESTAMP,
+    id_cartao INTEGER
+);
+    CREATE TABLE IF NOT EXISTS bronze.movimento_staging (
     id INTEGER PRIMARY KEY,
     vlr_transacao DECIMAL(10,2),
     des_transacao varchar(100),
@@ -117,6 +145,7 @@ INNER JOIN silver.cartao as cartao ON conta.id = cartao.id_conta AND associado.i
 INNER JOIN silver.movimento as movimento ON cartao.id = movimento.id_cartao;
 """)
 
+print('postgresql setup succesfully run')
 conn.commit()
 cur.close()
 conn.close()

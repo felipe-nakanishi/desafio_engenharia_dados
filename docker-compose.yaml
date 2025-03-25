@@ -44,12 +44,7 @@ services:
     volumes:
       - ./data:/app/data
       - .:/app
-    command: >
-      /opt/bitnami/spark/bin/spark-submit
-      --master spark://spark:7077
-      --packages com.databricks:spark-xml_2.12:0.17.0
-      --jars /app/jars/postgresql-42.7.3.jar
-      /app/ingestao_dados.py
-
+    command: sh -c "/app/run_etl.sh"
+    
 volumes:
   postgres_data:
