@@ -30,7 +30,7 @@ schema_associado = StructType([
     StructField('idade', IntegerType(), nullable=True),
     StructField('email', StringType(), nullable=True)
 ])
-df_associado = spark.read.option('header', True).schema(schema_associado).csv('/app/data/associado.csv')
+df_associado = spark.read.option('header', True).schema(schema_associado).csv('/app/data/input/associado.csv')
 
 # Leitura do arquivo bruto de conta:
 schema_conta = StructType([
@@ -39,7 +39,7 @@ schema_conta = StructType([
     StructField('data_criacao', StringType(), nullable=True),
     StructField('id_associado', IntegerType(), nullable=True)
 ])
-df_conta = pd.read_xml('/app/data/conta.xml',parser = 'etree')
+df_conta = pd.read_xml('/app/data/input/conta.xml',parser = 'etree')
 print(df_conta.head(4))
 df_conta = spark.createDataFrame(df_conta, schema=schema_conta)
 df_conta = df_conta.withColumn("data_criacao", col("data_criacao").cast(TimestampType()))
@@ -55,7 +55,7 @@ schema_cartao = StructType([
     StructField('id_conta', IntegerType(), nullable=True),
     StructField('id_associado', IntegerType(), nullable=True)
 ])
-df_cartao = spark.read.option('header', 'true').schema(schema_cartao).option('multiLine', True).json('/app/data/cartao.json')
+df_cartao = spark.read.option('header', 'true').schema(schema_cartao).option('multiLine', True).json('/app/data/input//cartao.json')
 
 # Leitura do arquivo de movimento:
 schema_movimento = StructType([
@@ -65,7 +65,7 @@ schema_movimento = StructType([
     StructField('data_movimento', StringType(), nullable=True),
     StructField('id_cartao', LongType(), nullable=True)
 ])
-df_movimento = spark.read.option('header', 'true').schema(schema_movimento).parquet('/app/data/movimento.parquet')
+df_movimento = spark.read.option('header', 'true').schema(schema_movimento).parquet('/app/data/input/movimento.parquet')
 df_movimento = df_movimento.withColumn('data_movimento', to_date(df_movimento.data_movimento, 'dd/MM/yyyy HH:mm:ss'))
 
 # Criação do dataframe de metadados:

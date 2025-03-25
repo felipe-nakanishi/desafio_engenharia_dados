@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   postgres:
     image: postgres:latest
@@ -21,17 +23,19 @@ services:
       - "8080:8080"  # Spark UI
     depends_on:
       - postgres
+    volumes:
+      - ./data:/app/data
 
   spark-worker:
     image: bitnami/spark:latest
-    volumes:
-      - ./data:/app/data
     container_name: spark_worker
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark:7077
     depends_on:
       - spark
+    volumes:
+      - ./data:/app/data
 
   etl:
     build: .
@@ -43,8 +47,8 @@ services:
       DB_CONNECTION: "jdbc:postgresql://postgres:5432/si_cooperative_cartoes"
     volumes:
       - ./data:/app/data
-      - .:/app
-    command: sh -c "/app/run_etl.sh"
-    
+      - ./scripts:/app/scripts
+    command: sh -c "/app/scripts/run_etl.sh"
+
 volumes:
   postgres_data:
