@@ -154,30 +154,6 @@ CREATE TABLE IF NOT EXISTS silver.metadados_cargas (
     tabela_carga varchar(100)
 );''')
 
-
-# Criação da tabela na camada gold:
-
-cur.execute("""
-CREATE TABLE IF NOT EXISTS gold.movimento_flat AS
-SELECT
-    associado.nome as nome_associado,
-    associado.sobrenome as sobrenome_associado,
-    associado.idade as idade_associado,
-    movimento.vlr_transacao as vlr_transacao_movimento,
-    movimento.des_transacao as des_transacao_movimento,
-    movimento.data_movimento as data_movimento,
-    cartao.num_cartao as numero_cartao,
-    cartao.nom_impresso as nome_impresso_cartao,
-    cartao.data_criacao as data_criacao_cartao,
-    conta.tipo as tipo_conta,
-    conta.data_criacao as data_criacao_conta
-FROM silver.associado as associado
-INNER JOIN silver.conta as conta ON associado.id = conta.id_associado
-INNER JOIN silver.cartao as cartao ON conta.id = cartao.id_conta AND associado.id = conta.id_associado
-INNER JOIN silver.movimento as movimento ON cartao.id = movimento.id_cartao;
-""")
-
-
 print('postgresql setup succesfully run')
 conn.commit()
 cur.close()

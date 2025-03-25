@@ -241,6 +241,42 @@ upsert_movimento = """
 cur.execute(upsert_movimento)
 cur.execute("DROP TABLE IF EXISTS silver.movimento_staging;")
 
+
+cur.execute("""
+CREATE TABLE IF NOT EXISTS gold.movimento_flat (
+    nome_associado VARCHAR(100),
+    sobrenome_associado VARCHAR(100),
+    idade_associado VARCHAR(100),
+    vlr_transacao_movimento VARCHAR(100),
+    des_transacao_movimento VARCHAR(100),
+    data_movimento VARCHAR(100),
+    numero_cartao VARCHAR(100),
+    nome_impresso_cartao VARCHAR(100),
+    data_criacao_cartao VARCHAR(100),
+    tipo_conta VARCHAR(100),
+    data_criacao_conta VARCHAR(100)
+);
+""")
+
+cur.execute("""
+INSERT INTO gold.movimento_flat
+SELECT associado.nome as nome_associado,
+    associado.sobrenome as sobrenome_associado,
+    associado.idade as idade_associado,
+    movimento.vlr_transacao as vlr_transacao_movimento,
+    movimento.des_transacao as des_transacao_movimento,
+    movimento.data_movimento as data_movimento,
+    cartao.num_cartao as numero_cartao,
+    cartao.nom_impresso as nome_impresso_cartao,
+    cartao.data_criacao as data_criacao_cartao,
+    conta.tipo as tipo_conta,
+    conta.data_criacao as data_criacao_conta
+FROM silver.associado as associado
+INNER JOIN silver.conta as conta ON associado.id = conta.id_associado
+INNER JOIN silver.cartao as cartao ON conta.id = cartao.id_conta AND associado.id = conta.id_associado
+INNER JOIN silver.movimento as movimento ON cartao.id = movimento.id_cartao;
+""")
+
 # Finalização
 conn.commit()
 cur.close()
