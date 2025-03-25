@@ -22,27 +22,27 @@ conn = psycopg2.connect(
 cur = conn.cursor()
 
 # Inicialização da Spark Session
-spark = SparkSession.builder.appName("ETL Silver").config("spark.jars", "jars/postgresql-42.7.3.jar").getOrCreate()
+spark = SparkSession.builder.appName("ETL silver").config("spark.jars", "jars/postgresql-42.7.3.jar").config(
+    "spark.serializer", "org.apache.spark.serializer.KryoSerializer").config("spark.executor.extraClassPath", "jars/postgresql-42.7.3.jar"
+                                                                             ).config("spark.driver.extraClassPath", "jars/postgresql-42.7.3.jar").getOrCreate()
 
-# --------------------------------------
-# Transformação: Associado (Silver)
-# --------------------------------------
+# --------------------------------------------
+# Transformação e Insert: Associado (Silver)
+# --------------------------------------------
+
 df_associado_bronze = spark.read.jdbc(
     url=jdbc_url,
     table="bronze.associado",
     properties=connection_properties
 )
 
-# Limpeza e validações
-df_associado_silver = df_associado_bronze.dropDuplicates(["id"]) \
-    .withColumn("nome", trim(upper(col("nome")))) \
-    .withColumn("sobrenome", trim(upper(col("sobrenome")))) \
-    .withColumn("email", trim(col("email"))) \
-    .filter(col("email").rlike("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) \
-    .filter((col("idade") >= 18) & (col("idade") <= 120)) \
-    .dropDuplicates(["email"])  # Garantir unicidade de emails
+# Limpeza e validações (remover espacos em branco no comeco e final do nome, sobrenome e email e filtrar por emails com formato valido):
+df_associado_silver = df_associado_bronze.withColumn("nome", trim(upper(col("nome")))
+                                                    ).withColumn("sobrenome", trim(upper(col("sobrenome")))
+                                                    ).withColumn("email", trim(col("email"))
+                                                                 ).filter(col("email").rlike("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"))
 
-# Escreve na staging table
+# Escreve na staging table:
 df_associado_silver.write.jdbc(
     url=jdbc_url,
     table="silver.associado_staging",
@@ -50,7 +50,7 @@ df_associado_silver.write.jdbc(
     properties=connection_properties
 )
 
-# UPSERT para tabela final
+# UPSERT para tabela final:
 upsert_associado = """
     INSERT INTO silver.associado (id, nome, sobrenome, idade, email)
     SELECT id, nome, sobrenome, idade, email FROM silver.associado_staging
@@ -66,34 +66,27 @@ cur.execute("DROP TABLE IF EXISTS silver.associado_staging;")
 conn.commit()
 
 # --------------------------------------
-# Transformação: Conta (Silver)
+# Transformação e Innsert: Conta (Silver)
 # --------------------------------------
+
 df_conta_bronze = spark.read.jdbc(
     url=jdbc_url,
     table="bronze.conta",
     properties=connection_properties
 )
 
-# Valida tipos de conta e datas
-df_conta_silver = df_conta_bronze \
-    .withColumn("tipo", upper(trim(col("tipo")))) \
-    .filter(col("tipo").isin(["CORRENTE", "POUPANCA"])) \
-    .filter(col("data_criacao") <= current_timestamp()) \
-    .dropDuplicates(["id"])
+# Valida tipos de conta e se data de criacao faz sentido:
+df_conta_silver = df_conta_bronze.withColumn("tipo", upper(trim(col("tipo")))
+                ).filter(col("tipo").isin(["CORRENTE", "POUPANCA", "EMPRESARIAL"])
+                ).filter(col("data_criacao") <= current_timestamp())
 
-# Valida relações com associado
-df_associado_silver = spark.read.jdbc(
-    url=jdbc_url,
-    table="silver.associado",
-    properties=connection_properties
-)
+# Garantin integridade referencial, que nao exista id associado sem relacao:
 df_conta_silver = df_conta_silver.join(
     df_associado_silver,
-    df_conta_silver.id_associado == df_associado_silver.id,
+    df_associado_silver.id == df_conta_silver.id_associado,
     "inner"
 ).select(df_conta_silver["*"])
 
-# Persistência
 df_conta_silver.write.jdbc(
     url=jdbc_url,
     table="silver.conta_staging",
@@ -114,49 +107,31 @@ cur.execute(upsert_conta)
 cur.execute("DROP TABLE IF EXISTS silver.conta_staging;")
 conn.commit()
 
-# --------------------------------------
-# Transformação: Cartão (Silver)
-# --------------------------------------
+# ----------------------------------------
+# Transformação e insert: Cartão (Silver)
+# ----------------------------------------
+
 df_cartao_bronze = spark.read.jdbc(
     url=jdbc_url,
     table="bronze.cartao",
     properties=connection_properties
 )
 
-# Função para validação Luhn
-def luhn_check(card_num):
-    try:
-        digits = [int(d) for d in str(card_num)]
-        odd_sum = sum(digits[-1::-2])
-        even_digits = [2 * d for d in digits[-2::-2]]
-        even_sum = sum(sum(divmod(d, 10)) for d in even_digits)
-        return (odd_sum + even_sum) % 10 == 0
-    except:
-        return False
+# remove espaços em branco no inicio e fim do nome e deixa em maiusculo:
+df_cartao_silver = df_cartao_bronze.withColumn("nom_impresso", trim(upper(col("nom_impresso"))))
 
-luhn_udf = udf(luhn_check, BooleanType())
-
-# Validações
-df_cartao_silver = df_cartao_bronze \
-    .filter(length(col("num_cartao").cast("string")) == 16) \
-    .withColumn("valid_luhn", luhn_udf(col("num_cartao"))) \
-    .filter(col("valid_luhn")) \
-    .drop("valid_luhn") \
-    .dropDuplicates(["id"])
-
-# Valida relações com conta e associado
-df_conta_silver = spark.read.jdbc(
-    url=jdbc_url,
-    table="silver.conta",
-    properties=connection_properties
-)
+# Garantir integridade referencial, que nao exista id associado sem relacao:
 df_cartao_silver = df_cartao_silver.join(
-    df_conta_silver,
-    df_cartao_silver.id_conta == df_conta_silver.id,
+    df_associado_silver,
+    df_associado_silver.id == df_cartao_silver.id_associado,
     "inner"
-).select(df_cartao_silver["*"])
+).join(
+    df_conta_silver,
+    df_conta_silver.id == df_cartao_silver.id_conta,
+    "inner").select(df_cartao_silver["*"])
 
-# Persistência
+
+# Ingestao na staging:
 df_cartao_silver.write.jdbc(
     url=jdbc_url,
     table="silver.cartao_staging",
@@ -178,48 +153,30 @@ cur.execute(upsert_cartao)
 cur.execute("DROP TABLE IF EXISTS silver.cartao_staging;")
 conn.commit()
 
-# --------------------------------------
-# Transformação: Movimento (Silver)
-# --------------------------------------
+# ------------------------------------------
+# Transformação e Insert: Movimento (Silver)
+# -------------------------------------------
+
 df_movimento_bronze = spark.read.jdbc(
     url=jdbc_url,
     table="bronze.movimento",
     properties=connection_properties
 )
 
-# Categorização de transações
-def categorize_transaction(desc):
-    desc = desc.lower()
-    food_keywords = ["supermercado", "restaurante", "padaria"]
-    transport_keywords = ["posto", "pedagio", "estacionamento"]
-    
-    if any(kw in desc for kw in food_keywords):
-        return "ALIMENTACAO"
-    elif any(kw in desc for kw in transport_keywords):
-        return "TRANSPORTE"
-    else:
-        return "OUTROS"
+# Filtra validacoes que sao menores ou iguais a zero, pois nao fazem sentido, formata a descricao e garante datas possiveis:
+df_movimento_silver = df_movimento_bronze.filter(col("vlr_transacao") > 0
+                                                ).withColumn("des_transacao", trim(upper(col("des_transacao")))
+                                                ).filter(col("data_movimento") <= current_timestamp())
 
-categorize_udf = udf(categorize_transaction, StringType())
 
-df_movimento_silver = df_movimento_bronze \
-    .filter(col("vlr_transacao") > 0) \
-    .withColumn("categoria", categorize_udf(col("des_transacao"))) \
-    .dropDuplicates(["id"])
-
-# Valida relação com cartão
-df_cartao_silver = spark.read.jdbc(
-    url=jdbc_url,
-    table="silver.cartao",
-    properties=connection_properties
-)
+# garantir integridade referencial:
 df_movimento_silver = df_movimento_silver.join(
     df_cartao_silver,
     df_movimento_silver.id_cartao == df_cartao_silver.id,
     "inner"
 ).select(df_movimento_silver["*"])
 
-# Persistência
+
 df_movimento_silver.write.jdbc(
     url=jdbc_url,
     table="silver.movimento_staging",
@@ -228,36 +185,37 @@ df_movimento_silver.write.jdbc(
 )
 
 upsert_movimento = """
-    INSERT INTO silver.movimento (id, vlr_transacao, des_transacao, data_movimento, id_cartao, categoria)
-    SELECT id, vlr_transacao, des_transacao, data_movimento, id_cartao, categoria FROM silver.movimento_staging
+    INSERT INTO silver.movimento (id, vlr_transacao, des_transacao, data_movimento, id_cartao)
+    SELECT id, vlr_transacao, des_transacao, data_movimento, id_cartao FROM silver.movimento_staging
     ON CONFLICT (id)
     DO UPDATE SET
         vlr_transacao = EXCLUDED.vlr_transacao,
         des_transacao = EXCLUDED.des_transacao,
         data_movimento = EXCLUDED.data_movimento,
-        id_cartao = EXCLUDED.id_cartao,
-        categoria = EXCLUDED.categoria;
+        id_cartao = EXCLUDED.id_cartao;
 """
 cur.execute(upsert_movimento)
 cur.execute("DROP TABLE IF EXISTS silver.movimento_staging;")
 
+# Criação da tabela movimento_flat na camada gold:
 
 cur.execute("""
 CREATE TABLE IF NOT EXISTS gold.movimento_flat (
     nome_associado VARCHAR(100),
     sobrenome_associado VARCHAR(100),
-    idade_associado VARCHAR(100),
-    vlr_transacao_movimento VARCHAR(100),
+    idade_associado BIGINT,
+    vlr_transacao_movimento DECIMAL(10,2),
     des_transacao_movimento VARCHAR(100),
-    data_movimento VARCHAR(100),
-    numero_cartao VARCHAR(100),
+    data_movimento TIMESTAMP,
+    numero_cartao BIGINT,
     nome_impresso_cartao VARCHAR(100),
-    data_criacao_cartao VARCHAR(100),
+    data_criacao_cartao TIMESTAMP,
     tipo_conta VARCHAR(100),
-    data_criacao_conta VARCHAR(100)
+    data_criacao_conta TIMESTAMP
 );
 """)
 
+# Insert na tabela movimento_flat:
 cur.execute("""
 INSERT INTO gold.movimento_flat
 SELECT associado.nome as nome_associado,
@@ -281,5 +239,5 @@ INNER JOIN silver.movimento as movimento ON cartao.id = movimento.id_cartao;
 conn.commit()
 cur.close()
 conn.close()
-spark.stop()
 print("Silver ETL concluído com sucesso!")
+spark.stop()
