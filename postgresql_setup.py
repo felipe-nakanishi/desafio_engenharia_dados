@@ -45,7 +45,7 @@ cur.execute("""CREATE TABLE IF NOT EXISTS bronze.associado (
 );                
     CREATE TABLE IF NOT EXISTS bronze.cartao (
     id INTEGER PRIMARY KEY,
-    num_cartao INTEGER,
+    num_cartao BIGINT,
     nom_impresso varchar(100),
     data_criacao TIMESTAMP,
     id_conta INTEGER,
@@ -53,7 +53,7 @@ cur.execute("""CREATE TABLE IF NOT EXISTS bronze.associado (
 );
     CREATE TABLE IF NOT EXISTS bronze.cartao_staging (
     id INTEGER PRIMARY KEY,
-    num_cartao INTEGER,
+    num_cartao BIGINT,
     nom_impresso varchar(100),
     data_criacao TIMESTAMP,
     id_conta INTEGER,
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS silver.conta (
 );
 CREATE TABLE IF NOT EXISTS silver.cartao (
     id INTEGER PRIMARY KEY,
-    num_cartao INTEGER,
+    num_cartao BIGINT,
     nom_impresso VARCHAR(100),
     data_criacao TIMESTAMP,
     id_conta INTEGER,
@@ -144,6 +144,7 @@ INNER JOIN silver.conta as conta ON associado.id = conta.id_associado
 INNER JOIN silver.cartao as cartao ON conta.id = cartao.id_conta AND associado.id = conta.id_associado
 INNER JOIN silver.movimento as movimento ON cartao.id = movimento.id_cartao;
 """)
+
 
 print('postgresql setup succesfully run')
 conn.commit()
