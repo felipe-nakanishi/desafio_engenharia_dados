@@ -11,7 +11,7 @@ COPY jars/postgresql-42.7.3.jar /app/jars/
 #RUN apt-get update && apt-get install -y libxml2-dev libxslt-dev python3-lxml
 
 # Instala pacotes do Python
-RUN pip install pandas psycopg2-binary lxml
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Copia os arquivos do projeto para a estrutura reorganizada
 COPY scripts/ /app/scripts/

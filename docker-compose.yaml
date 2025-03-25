@@ -19,6 +19,8 @@ services:
     container_name: spark_container
     environment:
       - SPARK_MODE=master
+      - SPARK_NETWORK_TIMEOUT=600s
+      - SPARK_EXECUTOR_HEARTBEATINTERVAL=120s
     ports:
       - "8080:8080"  # Spark UI
     depends_on:
