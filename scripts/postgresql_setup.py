@@ -90,7 +90,21 @@ CREATE TABLE IF NOT EXISTS silver.associado (
     idade INTEGER,
     email VARCHAR(255)
 );
+CREATE TABLE IF NOT EXISTS silver.associado_staging (
+    id INTEGER PRIMARY KEY,
+    nome VARCHAR(100),
+    sobrenome VARCHAR(100),
+    idade INTEGER,
+    email VARCHAR(255)
+);
 CREATE TABLE IF NOT EXISTS silver.conta (
+    id INTEGER PRIMARY KEY,
+    tipo VARCHAR(100),
+    data_criacao TIMESTAMP,
+    id_associado INTEGER,
+    CONSTRAINT fk_associado_conta FOREIGN KEY (id_associado) REFERENCES silver.associado(id)
+);
+CREATE TABLE IF NOT EXISTS silver.conta_staging (
     id INTEGER PRIMARY KEY,
     tipo VARCHAR(100),
     data_criacao TIMESTAMP,
@@ -107,7 +121,25 @@ CREATE TABLE IF NOT EXISTS silver.cartao (
     CONSTRAINT fk_conta_cartao FOREIGN KEY (id_conta) REFERENCES silver.conta(id),
     CONSTRAINT fk_associado_cartao FOREIGN KEY (id_associado) REFERENCES silver.associado(id)
 );
+CREATE TABLE IF NOT EXISTS silver.cartao_staging (
+    id INTEGER PRIMARY KEY,
+    num_cartao BIGINT,
+    nom_impresso VARCHAR(100),
+    data_criacao TIMESTAMP,
+    id_conta INTEGER,
+    id_associado INTEGER,
+    CONSTRAINT fk_conta_cartao FOREIGN KEY (id_conta) REFERENCES silver.conta(id),
+    CONSTRAINT fk_associado_cartao FOREIGN KEY (id_associado) REFERENCES silver.associado(id)
+);
 CREATE TABLE IF NOT EXISTS silver.movimento (
+    id INTEGER PRIMARY KEY,
+    vlr_transacao DECIMAL(10,2),
+    des_transacao VARCHAR(100),
+    data_movimento TIMESTAMP,
+    id_cartao INTEGER,
+    CONSTRAINT fk_cartao_movimento FOREIGN KEY (id_cartao) REFERENCES silver.cartao(id)
+);
+CREATE TABLE IF NOT EXISTS silver.movimento_staging (
     id INTEGER PRIMARY KEY,
     vlr_transacao DECIMAL(10,2),
     des_transacao VARCHAR(100),
