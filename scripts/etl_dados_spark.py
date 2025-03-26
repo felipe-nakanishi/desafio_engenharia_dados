@@ -140,14 +140,15 @@ df_cartao_silver.write.jdbc(
 )
 
 upsert_cartao = """
-    INSERT INTO silver.cartao (id, num_cartao, nom_impresso, id_conta, id_associado)
-    SELECT id, num_cartao, nom_impresso, id_conta, id_associado FROM silver.cartao_staging
+    INSERT INTO silver.cartao (id, num_cartao, nom_impresso, data_criacao, id_conta, id_associado)
+    SELECT id, num_cartao, nom_impresso, data_criacao,id_conta, id_associado FROM silver.cartao_staging
     ON CONFLICT (id)
     DO UPDATE SET
         num_cartao = EXCLUDED.num_cartao,
         nom_impresso = EXCLUDED.nom_impresso,
         id_conta = EXCLUDED.id_conta,
-        id_associado = EXCLUDED.id_associado;
+        id_associado = EXCLUDED.id_associado,
+        data_criacao = EXCLUDED.data_criacao;
 """
 cur.execute(upsert_cartao)
 cur.execute("DROP TABLE IF EXISTS silver.cartao_staging;")

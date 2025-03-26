@@ -10,13 +10,14 @@ COPY jars/postgresql-42.7.3.jar /app/jars/
 # Instala dependências necessárias
 #RUN apt-get update && apt-get install -y libxml2-dev libxslt-dev python3-lxml
 
-# Instala pacotes do Python
-RUN pip install --no-cache-dir -r /app/requirements.txt
-
 # Copia os arquivos do projeto para a estrutura reorganizada
 COPY scripts/ /app/scripts/
 COPY data/ /app/data/
 COPY jars/ /app/jars/
+COPY requirements.txt /app/
+
+# Instala pacotes do Python
+RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r /app/requirements.txt
 
 # Define o diretório de trabalho para os scripts
 WORKDIR /app

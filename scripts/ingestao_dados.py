@@ -53,9 +53,11 @@ schema_cartao = StructType([
     StructField('num_cartao', LongType(), nullable=True),
     StructField('nom_impresso', StringType(), nullable=True),
     StructField('id_conta', IntegerType(), nullable=True),
-    StructField('id_associado', IntegerType(), nullable=True)
+    StructField('id_associado', IntegerType(), nullable=True),
+    StructField('data_criacao', TimestampType(), nullable=True)
 ])
-df_cartao = spark.read.option('header', 'true').schema(schema_cartao).option('multiLine', True).json('/app/data/input//cartao.json')
+df_cartao = spark.read.option('header', 'true').schema(schema_cartao).option('multiLine', True).json('/app/data/input/cartao.json')
+print(df_cartao.show(5))
 
 # Leitura do arquivo de movimento:
 schema_movimento = StructType([
@@ -121,14 +123,15 @@ conn.commit()
 df_cartao.write.jdbc(url=jdbc_url, table="bronze.cartao_staging", mode="overwrite", properties=connection_properties)
 
 upsert_cartao = """
-INSERT INTO bronze.cartao (id, num_cartao, nom_impresso, id_conta, id_associado)
-SELECT id, num_cartao, nom_impresso, id_conta, id_associado FROM bronze.cartao_staging
+INSERT INTO bronze.cartao (id, num_cartao, nom_impresso,data_criacao, id_conta, id_associado)
+SELECT id, num_cartao, nom_impresso,data_criacao, id_conta, id_associado FROM bronze.cartao_staging
 ON CONFLICT (id)
 DO UPDATE SET 
     num_cartao = EXCLUDED.num_cartao,
     nom_impresso = EXCLUDED.nom_impresso,
     id_conta = EXCLUDED.id_conta,
-    id_associado = EXCLUDED.id_associado;
+    id_associado = EXCLUDED.id_associado,
+    data_criacao = EXCLUDED.data_criacao;
 """
 cur.execute(upsert_cartao)
 conn.commit()
