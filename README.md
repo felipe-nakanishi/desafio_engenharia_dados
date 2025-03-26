@@ -86,9 +86,6 @@ Antes de iniciar, instale:
 - docker-compose up -d
 
 ### **2️⃣ Clone o repositório**
-```sh
-git clone https://github.com/seu-usuario/seu-projeto.git
-cd seu-projeto
 
+git clone [https://github.com/felipe-nakanishi/desafio_sicredi.git]
 
-![Diagrama do Projeto](img/arquitetura.png)
