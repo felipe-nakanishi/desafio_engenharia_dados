@@ -7,6 +7,7 @@
 ## 📌 Índice
 - [Sobre o Projeto](#-sobre-o-projeto)
 - [Arquitetura de Dados](#-arquitetura-de-dados)
+- [Melhorias Futuras](#-melhorias-futuras)
 - [Tecnologias Utilizadas](#-tecnologias-utilizadas)
 - [Como Rodar o Projeto](#-como-rodar-o-projeto)
 - [Imagens e Diagramas](#-imagens-e-diagramas)
@@ -39,14 +40,24 @@ Foi utilizado a arquitetura medallion em camadas bronze, silver e gold para divi
 
 ---
 
-
-
-
 ## :building_construction: Arquitetura de Dados
 
-> A arquitetura de dados proposta para 
+> A arquitetura de dados proposta para esta primeira estrutura de cartões é a seguinte:
 
 ![arquitetura](img/arquitetura.png)
+
+- PostgreSQL: A escolha se deu pela sua confiabilidade e escalabilidade.
+- Spark: Framework de processamento distribuido para big data de alta performance e escalabilidade.
+- Python: Linguagem de fácil manutenção e que se conecta facilmente com o Spark, PostgreSQL e outras ferramentas e framework de dados.
+
+## :rocket: Melhorias Futuras
+
+Para uma melhoria futura da arquitetura a recomendação é a adição das seguintes ferramentas:
+
+- Orquestração: Apache Airflow para controlar e automatizar a pipeline de dados e execução de scripts.
+- Processamento Real-Time: Apache Kafka para casos como prevençao à fraudes um framework real-time é importante.
+- Segurança e controle de acesso: Implementar um controle por roles no PostgreSQL por usuário.
+- Cloud: Pode-se migrar a arquitetura para a nuvem AWS dado sua escalabilidade e menor custo.
 
 ## 🛠 Tecnologias Utilizadas
 
