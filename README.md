@@ -6,12 +6,10 @@
 
 ## 📌 Índice
 - [Sobre o Projeto](#-sobre-o-projeto)
+- [Arquitetura de Dados](#-arquitetura-de-dados)
 - [Tecnologias Utilizadas](#-tecnologias-utilizadas)
 - [Como Rodar o Projeto](#-como-rodar-o-projeto)
-- [Estrutura do Projeto](#-estrutura-do-projeto)
 - [Imagens e Diagramas](#-imagens-e-diagramas)
-- [Contribuição](#-contribuição)
-- [Licença](#-licença)
 
 ---
 
@@ -32,12 +30,23 @@
 
 Foram utilizados arquivos ficticios de diversos formatos como fonte de dados para a ingestão no banco de dados, a ideia foi simular as diversas fontes de dados que existem em um cenário real:
 
-*** associado: *** associado.csv
-*** cartão: cartao.json
-*** conta: conta.xml
-*** movimento do cartão: movimento.parquet
+- associado: associado.csv
+- cartão: cartao.json
+- conta: conta.xml
+- movimento do cartão: movimento.parquet
+
+Foi utilizado a arquitetura medallion em camadas bronze, silver e gold para divisão lógica de camadas.
 
 ---
+
+
+
+
+## :building_construction: Arquitetura de Dados
+
+> A arquitetura de dados proposta para 
+
+![arquitetura](img/arquitetura.png)
 
 ## 🛠 Tecnologias Utilizadas
 
