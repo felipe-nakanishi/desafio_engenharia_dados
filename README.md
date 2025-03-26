@@ -2,14 +2,7 @@
 
 ## :nerd_face: Descrição do projeto
 
-> Realizar uma POC de um novo datalake utilizando dados de cartões para o teste. Deve-se considerar a seguinte estrutura de tabelas:
-
-![tabela_silver](img/tabelas_silver.png)
-
-> Ao final deve ser gerado e exportado em arquivo .csv a seguinte estrutura de informações:
-
-![tabela_gold](img/tabela_gold.png)
-
+> O objetivo do projeto é realizar uma POC (proof of concept) para o desenvolvimento de um novo datalake para a empresa SiCooperative LTDA. A primeira estrutura a ser considerada e que foi utilizada para este projeto é a de movimentação de cartões.
 
 ## 📌 Índice
 - [Sobre o Projeto](#-sobre-o-projeto)
@@ -26,7 +19,11 @@
 
 📌 Breve explicação sobre o que o projeto faz e qual problema resolve.
 
-> Exemplo: "Este projeto é um ETL desenvolvido em Apache Airflow para processar e transformar dados financeiros."
+![tabela_silver](img/tabelas_silver.png)
+
+> Ao final deve ser gerado e exportado em arquivo .csv a seguinte estrutura de informações:
+
+![tabela_gold](img/tabela_gold.png)
 
 ---
 
