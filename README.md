@@ -77,9 +77,9 @@ Antes de iniciar, instale:
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
-Para rodar o container siga o seguinte passo a passo:
+#### Para rodar o container siga o seguinte passo a passo:
 
-Abrir o terminal e digitar:
+> Abrir o terminal e digitar:
 
 cd caminho_do_diretorio
 docker-compose build --no-cache
