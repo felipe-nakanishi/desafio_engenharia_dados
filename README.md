@@ -17,11 +17,15 @@
 
 ## 📖 Sobre o Projeto
 
-📌 Breve explicação sobre o que o projeto faz e qual problema resolve.
+📌 A SiCooperative LTDA. enfrenta um problema de velocidade e assertividade na tomada de decisões causada pela ineficiência na disponibilização de informações, hoje muito tempo é perdido na criação de relatórios individuais e na tentativa de correlacioná-los manualmente.
+
+> Este projeto tem como objetivo ser o primeiro passo para o desenvolvimento de um datalake que possibilitará a centralização de informações estratégicas.
+
+> A estrutura de cartões segue a seguinte estrutura:
 
 ![tabela_silver](img/tabelas_silver.png)
 
-> Ao final deve ser gerado e exportado em arquivo .csv a seguinte estrutura de informações:
+> O objetivo é modelar esta estrutura em um banco de dados e ao final exportar um arquivo .csv com a seguinte estrutura:
 
 ![tabela_gold](img/tabela_gold.png)
 
