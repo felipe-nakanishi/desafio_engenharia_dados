@@ -81,9 +81,9 @@ Antes de iniciar, instale:
 
 > Abrir o terminal e digitar:
 
-cd caminho_do_diretorio
-docker-compose build --no-cache
-docker-compose up -d
+- cd caminho_do_diretorio
+- docker-compose build --no-cache
+- docker-compose up -d
 
 ### **2️⃣ Clone o repositório**
 ```sh
