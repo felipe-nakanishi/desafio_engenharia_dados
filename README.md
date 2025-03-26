@@ -32,7 +32,7 @@
 
 Foram utilizados arquivos ficticios de diversos formatos como fonte de dados para a ingestão no banco de dados, a ideia foi simular as diversas fontes de dados que existem em um cenário real:
 
-*** associado: associado.csv
+*** associado: *** associado.csv
 *** cartão: cartao.json
 *** conta: conta.xml
 *** movimento do cartão: movimento.parquet
